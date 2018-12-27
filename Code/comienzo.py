@@ -8,24 +8,24 @@ class Ant(object):
         self.listaIteracion = []
         self.actualEdge = numero
 
-    def actualEdge(self):
+    def getActualEdge(self):
         return self.actualEdge
 
-    def solution(self):
-        return self.solucion
+    def getSolution(self):
+        return self.solution
 
-    def cost(self):
+    def getCost(self):
         return self.cost
     
-    def benefit(self):
+    def getBenefit(self):
         return self.benefit
     
-    def unifo(self):
+    def getUnifo(self):
         return self.unifo
     
-    def listaIteracion(self):
+    def getListaIteracion(self):
         return self.listaIteracion
 
     def __str__(self):
-        return "esta hormiga tiene un coste de %s y un beneficion de %s con la solucion: %s" (self.cost,self.benefit,self.solution)
+        return ("esta hormiga tiene un coste de %s y un beneficion de %s con la solucion: %s",(self.cost,self.benefit,self.solution))
         
