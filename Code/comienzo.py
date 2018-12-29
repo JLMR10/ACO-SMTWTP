@@ -105,7 +105,18 @@ def initializePheromones(unsortedJobList):
 
 def initializeHeuristic(unsortedJobList):
     size = len(unsortedJobList)
-    return [[mddOp(0,job) for job in unsortedJobList] for i in range(size)]
+    # return [[mddOp(0,job) for job in unsortedJobList] for i in range(size)]
+    heuristicMatrix = [0]*size
+    for i in range(size):
+        heuristicMatrixJ = [0]*size
+        for j in range(size):
+            if i==j:
+                heuristicMatrixJ[j] = 0
+            else:
+                heuristicMatrixJ[j] = 1/mddOp(unsortedJobList[i].processingTime,unsortedJobList[j])
+        heuristicMatrix[i] = heuristicMatrixJ
+    return heuristicMatrix
+
 
 def initializeTrasitionProbability(alpha,beta,unsortedJobList,heuristicMatrix,pheromonesMatrix):
     size = len(unsortedJobList)
@@ -115,11 +126,11 @@ def initializeTrasitionProbability(alpha,beta,unsortedJobList,heuristicMatrix,ph
         for j in range(size):
             numerator = (pheromonesMatrix[i][j]**alpha)*(heuristicMatrix[i][j]**beta)
             denominator = 0
+            probability = 0
             for h in range(size):
-                probability = 0
                 if h!=j:
                     denominator+= (pheromonesMatrix[i][h]**alpha)*(heuristicMatrix[i][h]**beta)
-                    probability = numerator/denominator
+            probability = numerator/denominator
             probabilityMatrixJ[j]=probability
             print(probabilityMatrixJ)
         probabilityMatrix[i] = probabilityMatrixJ
@@ -127,5 +138,5 @@ def initializeTrasitionProbability(alpha,beta,unsortedJobList,heuristicMatrix,ph
 
 problema = [Job(1,26,1,179),Job(2,24,10,183),Job(3,79,9,196),Job(4,46,4,202),Job(5,32,3,192)]
 vuelos = [Job(1,8,2,12),Job(2,9,5,18),Job(3,5,2,10),Job(4,6,8,14)]
-
+#numero,processingTime,weight,dueDate
 
