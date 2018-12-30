@@ -130,18 +130,14 @@ def initializeHeuristic(unsortedJobList):
 
 def initializeTrasitionProbability(alpha,beta,unsortedJobList,heuristicMatrix,pheromonesMatrix):
     size = len(unsortedJobList)
-    probabilityMatrix = [0]*size
+    probabilityMatrix = []
     for i in range(size):
-        probabilityMatrixJ = [0]*size
+        probabilityMatrixJ = []
         for j in range(size):
             numerator = (pheromonesMatrix[i][j]**alpha)*(heuristicMatrix[i][j]**beta)
-            denominator = 0
-            probability = 0
-            for h in range(size):
-                denominator+= (pheromonesMatrix[i][h]**alpha)*(heuristicMatrix[i][h]**beta)
-            probability = numerator/denominator
-            probabilityMatrixJ[j]=probability
-        probabilityMatrix[i] = probabilityMatrixJ
+            denominator = sum((pheromonesMatrix[i][h]**alpha)*(heuristicMatrix[i][h]**beta) for h in range(size))
+            probabilityMatrixJ.append(numerator/denominator)
+        probabilityMatrix.append(probabilityMatrixJ)
     return probabilityMatrix
 
 problema = [Job(1,26,1,179),Job(2,24,10,183),Job(3,79,9,196),Job(4,46,4,202),Job(5,32,3,192)]
