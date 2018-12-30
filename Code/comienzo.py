@@ -45,7 +45,7 @@ class Job(object):
 
     def __init__(self,numero,pT,w,dD):
         self.processingTime = pT
-        self.weigth = w
+        self.weight = w
         self.dueDate = dD
         self.node = numero
     
@@ -97,13 +97,13 @@ def totalWeightedTardiness(jobList):
         flowTimeOut.append(totalFlowTime)
         lateness = totalFlowTime-job.dueDate
         if lateness >= 0:
-            tardiness[i] = lateness*job.weigth
+            tardiness[i] = lateness*job.weight
         else:
-            earliness[i] = lateness*job.weigth
+            earliness[i] = lateness*job.weight
     return sum(tardiness)
 
 def mddOp(processed, job):
-    return max(processed+job.processingTime,job.dueDate)*job.weigth
+    return max(processed+job.processingTime,job.dueDate)*job.weight
 
 def mddSort(jobList):
     unsortedJobList = copy.copy(jobList)
