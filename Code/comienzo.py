@@ -103,7 +103,7 @@ def totalWeightedTardiness(jobList):
     return sum(tardiness)
 
 def mddOp(processed, job):
-    return max(processed+job.processingTime,job.dueDate)*job.weight
+    return max(processed+job.processingTime,job.dueDate)*job.weigth
 
 def mddSort(jobList):
     unsortedJobList = copy.copy(jobList)
