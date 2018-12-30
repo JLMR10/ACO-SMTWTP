@@ -1,17 +1,41 @@
-import math,operator,copy
+import math,operator,copy,random
 import networkx as nx
 
 class Ant(object):
     
-    def __init__(self,numero):
+    def __init__(self,n):
         self.cost = 0.0
         self.benefit = 0.0
-        self.solution = []
+        self.actualNode = n
+        self.solution = [self.actualNode]
         self.unifo = 0.0
         self.iterationList = []
-        self.actualEdge = numero
         self.processedTime = 0
-        self.probabilityNextStep = []
+        self.probabilityMatrix = []
+
+    def getSolution(self):
+        while len(self.solution)!=len(self.probabilityMatrix[0]):
+            self.solution.append(self.nextStep())
+    
+    def nextStep(self):
+        antProbability = random.uniform(0,1)
+        probabilityNodes = copy.copy(self.probabilityMatrix[self.actualNode])
+
+        for node in self.solution:
+            probabilityNodes[node] = 0
+
+        probabilityNodes = [probabilityNodes[i]/sum(probabilityNodes) for i in range(len(probabilityNodes))]
+        
+        acc = 0
+        node = 0
+        for i,probability in enumerate(probabilityNodes):
+            acc+=probability
+            if acc>=antProbability:
+                node = i
+                break
+
+        return node
+
 
     def __str__(self):
         return ("esta hormiga tiene un coste de %s y un beneficio de %s con la solución: %s",(self.cost,self.benefit,self.solution))
@@ -40,6 +64,7 @@ class ACO(object):
         self.pheromonesMatrix = initializePheromones(self.jobList)
         self.heuristicMatrix = initializeHeuristic(self.jobList)
         self.probabilityMatrix = initializeTrasitionProbability(self.alpha,self.beta,self.jobList,self.heuristicMatrix,self.pheromonesMatrix)
+
 
     def __str__(self):
         return "ACO"
@@ -141,7 +166,7 @@ def initializeTrasitionProbability(alpha,beta,unsortedJobList,heuristicMatrix,ph
     return probabilityMatrix
 
 problema = [Job(1,26,1,179),Job(2,24,10,183),Job(3,79,9,196),Job(4,46,4,202),Job(5,32,3,192)]
-vuelos = [Job(1,8,2,12),Job(2,9,5,18),Job(3,5,2,10),Job(4,6,8,14)]
+vuelos = [Job(0,8,2,12),Job(1,9,5,18),Job(2,5,2,10),Job(3,6,8,14)]
 #numero,processingTime,weight,dueDate
 
 # def probando(heuristicMatrix,pheromonesMatrix):
