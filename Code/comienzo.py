@@ -30,7 +30,7 @@ class Ant(object):
         node = 0
         for i,probability in enumerate(probabilityNodes):
             acc+=probability
-            if acc>=antProbability:
+            if acc>antProbability:
                 node = i
                 break
 
@@ -72,20 +72,20 @@ class ACO(object):
 def earliestDueDate(jobList):
     return sorted(jobList, key=operator.attrgetter('dueDate'))
 
-def totalTardiness(jobList):
-    totalFlowTime = 0
-    flowTimeOut = []
-    earliness = [0]*len(jobList)
-    tardiness = [0]*len(jobList)
-    for i,job in enumerate(jobList):
-        totalFlowTime += job.processingTime
-        flowTimeOut.append(totalFlowTime)
-        lateness = totalFlowTime-job.dueDate
-        if lateness >= 0:
-            tardiness[i] = lateness
-        else:
-            earliness[i] = lateness
-    return sum(tardiness)
+# def totalTardiness(jobList):
+#     totalFlowTime = 0
+#     flowTimeOut = []
+#     earliness = [0]*len(jobList)
+#     tardiness = [0]*len(jobList)
+#     for i,job in enumerate(jobList):
+#         totalFlowTime += job.processingTime
+#         flowTimeOut.append(totalFlowTime)
+#         lateness = totalFlowTime-job.dueDate
+#         if lateness >= 0:
+#             tardiness[i] = lateness
+#         else:
+#             earliness[i] = lateness
+#     return sum(tardiness)
 
 def totalWeightedTardiness(jobList):
     totalFlowTime = 0
@@ -103,7 +103,7 @@ def totalWeightedTardiness(jobList):
     return sum(tardiness)
 
 def mddOp(processed, job):
-    return max(processed+job.processingTime,job.dueDate)
+    return max(processed+job.processingTime,job.dueDate)*job.weight
 
 def mddSort(jobList):
     unsortedJobList = copy.copy(jobList)
@@ -124,7 +124,7 @@ def mddSort(jobList):
 
 def initializePheromones(unsortedJobList):
     sortedJobList = earliestDueDate(unsortedJobList)
-    tedd = totalTardiness(sortedJobList)
+    tedd = totalWeightedTardiness(sortedJobList)
     size = len(sortedJobList)
     t0 = 1/(len(unsortedJobList)*tedd)
     matrix = []
