@@ -11,6 +11,7 @@ class Ant(object):
         self.iterationList = []
         self.actualEdge = numero
         self.processedTime = 0
+        self.probabilityNextStep = []
 
     def __str__(self):
         return ("esta hormiga tiene un coste de %s y un beneficio de %s con la solución: %s",(self.cost,self.benefit,self.solution))
@@ -22,7 +23,7 @@ class Job(object):
         self.processingTime = pT
         self.weigth = w
         self.dueDate = dD
-        self.nodo = numero
+        self.node = numero
     
     def __str__(self):
         return ("Job")
@@ -38,7 +39,7 @@ class ACO(object):
         self.graph = nx.complete_graph(self.size)
         self.pheromonesMatrix = initializePheromones(self.jobList)
         self.heuristicMatrix = initializeHeuristic(self.jobList)
-
+        self.probabilityMatrix = initializeTrasitionProbability(self.alpha,self.beta,self.jobList,self.heuristicMatrix,self.pheromonesMatrix)
 
     def __str__(self):
         return "ACO"
@@ -101,7 +102,16 @@ def initializePheromones(unsortedJobList):
     tedd = totalTardiness(sortedJobList)
     size = len(sortedJobList)
     t0 = 1/(len(unsortedJobList)*tedd)
-    return [[t0 for j in range(size)] for i in range(size)]
+    matrix = []
+    for i in range(size):
+        matrixJ = []
+        for j in range(size):
+            if i==j:
+                matrixJ.append(0)
+            else:
+                matrixJ.append(t0)
+        matrix.append(matrixJ)
+    return matrix
 
 def initializeHeuristic(unsortedJobList):
     size = len(unsortedJobList)
@@ -128,11 +138,9 @@ def initializeTrasitionProbability(alpha,beta,unsortedJobList,heuristicMatrix,ph
             denominator = 0
             probability = 0
             for h in range(size):
-                if h!=j:
-                    denominator+= (pheromonesMatrix[i][h]**alpha)*(heuristicMatrix[i][h]**beta)
+                denominator+= (pheromonesMatrix[i][h]**alpha)*(heuristicMatrix[i][h]**beta)
             probability = numerator/denominator
             probabilityMatrixJ[j]=probability
-            print(probabilityMatrixJ)
         probabilityMatrix[i] = probabilityMatrixJ
     return probabilityMatrix
 
@@ -140,3 +148,4 @@ problema = [Job(1,26,1,179),Job(2,24,10,183),Job(3,79,9,196),Job(4,46,4,202),Job
 vuelos = [Job(1,8,2,12),Job(2,9,5,18),Job(3,5,2,10),Job(4,6,8,14)]
 #numero,processingTime,weight,dueDate
 
+# def probando(heuristicMatrix,pheromonesMatrix):
