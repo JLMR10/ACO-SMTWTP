@@ -15,7 +15,9 @@ class Ant(object):
 
     def getSolution(self):
         while len(self.solution)!=len(self.probabilityMatrix[0]):
-            self.solution.append(self.nextStep())
+            self.actualNode = self.nextStep()
+            self.solution.append(self.actualNode)
+        
     
     def nextStep(self):
         antProbability = random.uniform(0,1)
