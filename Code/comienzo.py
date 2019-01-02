@@ -20,24 +20,23 @@ class Ant(object):
     
     def nextStep(self,q0,pheromonesMatrix,heuristicMatrix):
         q = random.uniform(0,1)
-        node = 0
+        node = float("-inf")
+        probabilityNodes = copy.copy(self.probabilityMatrix[self.actualNode])
         if(q<=q0):
-            antValue = 0
+            antValue = float("-inf")
             h = 0 
             for j in range(len(probabilityNodes)):
-                newAntValue = pheromonesMatrix[self.actualNode][j]/heuristicMatrix[self.actualNode][j]
-                if(newAntValue>antValue):
-                    antValue=newAntValue
-                    h = j
+                newAntValue = pheromonesMatrix[self.actualNode][j]*heuristicMatrix[self.actualNode][j]
+                if(j not in self.solution):
+                    if(newAntValue>antValue):
+                        antValue=newAntValue
+                        h = j
             node = h
         else:
-            probabilityNodes = copy.copy(self.probabilityMatrix[self.actualNode])
 
             for node in self.solution:
                 probabilityNodes[node] = 0
-
             probabilityNodes = [probabilityNodes[i]/sum(probabilityNodes) for i in range(len(probabilityNodes))]
-            
             acc = 0
             for i,probability in enumerate(probabilityNodes):
                 acc+=probability
@@ -326,7 +325,7 @@ def probando():
     sch = []
     i=0
     while i<10:
-        prueba = ACO(1,1,0.1,0,datos,20,100)
+        prueba = ACO(1,1,0.1,0.9,datos,20,100)
         x,y = prueba.execute()
         if y<solution:
             solution = y
