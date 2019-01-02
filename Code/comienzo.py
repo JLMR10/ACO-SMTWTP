@@ -5,13 +5,15 @@ class Ant(object):
     
     def __init__(self,n):
         self.valueSolution = 0.0
-        self.initialNode = n
-        self.actualNode = n
+        # self.initialNode = n
+        self.initialNode = random.randint(0,39)
+        self.actualNode = self.initialNode
         self.solution = [self.initialNode]
         self.probabilityMatrix = []
 
     def getSolution(self):
         self.solution = [self.initialNode]
+        self.actualNode = self.initialNode
         while len(self.solution)!=len(self.probabilityMatrix[0]):
             self.actualNode = self.nextStep()
             self.solution.append(self.actualNode)
@@ -76,8 +78,8 @@ class ACO(object):
         h = 0
         solution = []
         
-        while (j<self.generations and i<200):
-            print(j)
+        while (j<self.generations and i<20):
+            # print(j)
             thisSolution = self.iterate()
             if thisSolution == solution:
                 i+=1
@@ -86,6 +88,7 @@ class ACO(object):
                 h+=1
             j+=1
             solution = thisSolution
+            print(solution)
         print(h,i,j)
         print(solution)
         return solution
@@ -266,13 +269,13 @@ def readExamplesGeneric(file,size):
 
 # def probando(heuristicMatrix,pheromonesMatrix):
 
-# prueba = ACO(1,1,0.1,vuelos,4,1000)
+# prueba = ACO(1,1,0.1,vuelos,4,100)
 # ho = Ant(3)
 # ho.probabilityMatrix = prueba.probabilityMatrix
 # ho.getSolution()
 # prueba.execute()
 
-problema = readExamplesGeneric("wt100.txt",100)
+problema = readExamplesGeneric("wt40.txt",40)
 def creaJobs(problema):
     sol = []
     i = 0
@@ -282,14 +285,18 @@ def creaJobs(problema):
     return sol
 datos = creaJobs(problema[0])
 
-prueba = ACO(1,1,0.1,datos,20,500)
-prueba.execute()
+# prueba = ACO(1,1,0.1,datos,20,500)
+# prueba.execute()
 def probando():
-    solution = 200
+    solution = 0
     sch = []
-    while solution>50:
-        prueba = ACO(1,1,0.1,vuelos,4,1000)
+    i=0
+    while i<50:
+        prueba = ACO(1,1,0.1,datos,20,100)
         x,y = prueba.execute()
-        solution = y
-        sch = x
+        if y<solution:
+            solution = y
+            sch = x
+        i+=1
     return (sch,solution)
+probando()
