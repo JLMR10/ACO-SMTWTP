@@ -5,39 +5,48 @@ class Ant(object):
     
     def __init__(self,n):
         self.valueSolution = 0.0
-        # self.initialNode = n
-        self.initialNode = random.randint(0,39)
+        self.initialNode = n
         self.actualNode = self.initialNode
         self.solution = [self.initialNode]
         self.probabilityMatrix = []
 
-    def getSolution(self):
+    def getSolution(self,q0,pheromonesMatrix,heuristicMatrix):
         self.solution = [self.initialNode]
         self.actualNode = self.initialNode
         while len(self.solution)!=len(self.probabilityMatrix[0]):
-            self.actualNode = self.nextStep()
+            self.actualNode = self.nextStep(q0,pheromonesMatrix,heuristicMatrix)
             self.solution.append(self.actualNode)
         # print(self.solution)
     
-    def nextStep(self):
-        antProbability = random.uniform(0,1)
-        probabilityNodes = copy.copy(self.probabilityMatrix[self.actualNode])
-
-        for node in self.solution:
-            probabilityNodes[node] = 0
-
-        probabilityNodes = [probabilityNodes[i]/sum(probabilityNodes) for i in range(len(probabilityNodes))]
-        
-        acc = 0
+    def nextStep(self,q0,pheromonesMatrix,heuristicMatrix):
+        q = random.uniform(0,1)
         node = 0
-        for i,probability in enumerate(probabilityNodes):
-            acc+=probability
-            # print("prob",probability,"Acc",acc,"----",antProbability)
-            if acc>antProbability:
-                node = i
-                # print(node)
-                break
-        # print("========")
+        if(q<=q0):
+            antValue = 0
+            h = 0 
+            for j in range(len(probabilityNodes)):
+                newAntValue = pheromonesMatrix[self.actualNode][j]/heuristicMatrix[self.actualNode][j]
+                if(newAntValue>antValue):
+                    antValue=newAntValue
+                    h = j
+            node = h
+        else:
+            probabilityNodes = copy.copy(self.probabilityMatrix[self.actualNode])
+
+            for node in self.solution:
+                probabilityNodes[node] = 0
+
+            probabilityNodes = [probabilityNodes[i]/sum(probabilityNodes) for i in range(len(probabilityNodes))]
+            
+            acc = 0
+            for i,probability in enumerate(probabilityNodes):
+                acc+=probability
+                # print("prob",probability,"Acc",acc,"----",antProbability)
+                if acc>q:
+                    node = i
+                    # print(node)
+                    break
+            # print("========")
         return node
 
 
@@ -58,10 +67,11 @@ class Job(object):
 
 class ACO(object):
 
-    def __init__(self,alphaP,betaP,pP,jobListP,nAnts,n):
+    def __init__(self,alphaP,betaP,pP,q0,jobListP,nAnts,n):
         self.alpha = alphaP
         self.beta = betaP
         self.p = pP
+        self.q0 = q0
         self.jobList = jobListP
         randomNodes = random.sample(range(len(jobListP)),nAnts)
         self.antList = [Ant(x) for x in randomNodes]
@@ -99,7 +109,7 @@ class ACO(object):
         bestSolution = []
         for ant in self.antList:
             ant.probabilityMatrix = self.probabilityMatrix
-            ant.getSolution()
+            ant.getSolution(self.q0,self.pheromonesMatrix,self.heuristicMatrix)
             antJobList = []
             for i in ant.solution:
                 antJobList.append(self.jobList[i])
@@ -293,7 +303,7 @@ def readExamplesGeneric(file,size):
 
 # def probando(heuristicMatrix,pheromonesMatrix):
 
-# prueba = ACO(1,1,0.1,vuelos,2,100)
+# prueba = ACO(1,1,0.1,0,vuelos,2,100)
 # ho = Ant(3)
 # ho.probabilityMatrix = prueba.probabilityMatrix
 # ho.getSolution()
@@ -309,14 +319,14 @@ def creaJobs(problema):
     return sol
 datos = creaJobs(problema[0])
 
-# prueba = ACO(1,1,0.1,datos,20,500)
+# prueba = ACO(1,1,0.1,0,datos,20,500)
 # prueba.execute()
 def probando():
     solution = float("inf")
     sch = []
     i=0
     while i<10:
-        prueba = ACO(1,1,0.1,datos,20,100)
+        prueba = ACO(1,1,0.1,0,datos,20,100)
         x,y = prueba.execute()
         if y<solution:
             solution = y
