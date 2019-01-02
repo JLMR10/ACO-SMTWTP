@@ -63,7 +63,8 @@ class ACO(object):
         self.beta = betaP
         self.p = pP
         self.jobList = jobListP
-        self.antList = [Ant(i) for i in range(nAnts)]
+        randomNodes = random.sample(range(len(jobListP)),nAnts)
+        self.antList = [Ant(x) for x in randomNodes]
         self.generations = n
         # self.i = 0
         self.size = len(self.jobList)
@@ -115,6 +116,10 @@ class ACO(object):
         #     print(self.probabilityMatrix)
 
         # self.i+=1
+        opt2Solution,opt2Value = two_opt(bestSolution)
+        if opt2Value < valueBestSolution:
+            bestSolution = opt2Solution
+            valueBestSolution = opt2Value
         return (bestSolution,valueBestSolution)
 
     def updatePheromones(self,solution,valueSolution):
@@ -151,6 +156,22 @@ def earliestDueDate(jobList):
 #         else:
 #             earliness[i] = lateness
 #     return sum(tardiness)
+def two_opt(route):
+    best = route
+    improved = True
+    while improved:
+        improved = False
+        for i in range(1, len(route)-2):
+            for j in range(i+1, len(route)):
+                if j-i == 1: continue # changes nothing, skip then
+                new_route = route[:]
+                new_route[i:j] = route[j-1:i-1:-1] # this is the 2woptSwap
+                if totalWeightedTardiness(new_route) < totalWeightedTardiness(best):
+                    best = new_route
+                    improved = True
+        route = best
+    return (best,totalWeightedTardiness(best))
+
 
 def totalWeightedTardiness(jobList):
     totalFlowTime = 0
@@ -269,11 +290,11 @@ def readExamplesGeneric(file,size):
 
 # def probando(heuristicMatrix,pheromonesMatrix):
 
-# prueba = ACO(1,1,0.1,vuelos,4,100)
+prueba = ACO(1,1,0.1,vuelos,4,100)
 # ho = Ant(3)
 # ho.probabilityMatrix = prueba.probabilityMatrix
 # ho.getSolution()
-# prueba.execute()
+prueba.execute()
 
 problema = readExamplesGeneric("wt40.txt",40)
 def creaJobs(problema):
@@ -288,10 +309,10 @@ datos = creaJobs(problema[0])
 # prueba = ACO(1,1,0.1,datos,20,500)
 # prueba.execute()
 def probando():
-    solution = 0
+    solution = float("inf")
     sch = []
     i=0
-    while i<50:
+    while i<10:
         prueba = ACO(1,1,0.1,datos,20,100)
         x,y = prueba.execute()
         if y<solution:
@@ -299,4 +320,4 @@ def probando():
             sch = x
         i+=1
     return (sch,solution)
-probando()
+# pruebasol = probando()
