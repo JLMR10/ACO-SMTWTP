@@ -116,10 +116,10 @@ class ACO(object):
         #     print(self.probabilityMatrix)
 
         # self.i+=1
-        # opt2Solution,opt2Value = two_opt(bestSolution)
-        # if opt2Value < valueBestSolution:
-        #     bestSolution = opt2Solution
-        #     valueBestSolution = opt2Value
+        opt2Solution,opt2Value = two_opt(bestSolution,self.jobList)
+        if opt2Value < valueBestSolution:
+            bestSolution = opt2Solution
+            valueBestSolution = opt2Value
         return (bestSolution,valueBestSolution)
 
     def updatePheromones(self,solution,valueSolution):
@@ -293,11 +293,11 @@ def readExamplesGeneric(file,size):
 
 # def probando(heuristicMatrix,pheromonesMatrix):
 
-prueba = ACO(1,1,0.1,vuelos,4,100)
+# prueba = ACO(1,1,0.1,vuelos,2,100)
 # ho = Ant(3)
 # ho.probabilityMatrix = prueba.probabilityMatrix
 # ho.getSolution()
-prueba.execute()
+# prueba.execute()
 
 problema = readExamplesGeneric("wt40.txt",40)
 def creaJobs(problema):
@@ -323,4 +323,4 @@ def probando():
             sch = x
         i+=1
     return (sch,solution)
-# pruebasol = probando()
+pruebasol = probando()
