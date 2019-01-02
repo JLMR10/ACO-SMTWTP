@@ -116,10 +116,10 @@ class ACO(object):
         #     print(self.probabilityMatrix)
 
         # self.i+=1
-        opt2Solution,opt2Value = two_opt(bestSolution)
-        if opt2Value < valueBestSolution:
-            bestSolution = opt2Solution
-            valueBestSolution = opt2Value
+        # opt2Solution,opt2Value = two_opt(bestSolution)
+        # if opt2Value < valueBestSolution:
+        #     bestSolution = opt2Solution
+        #     valueBestSolution = opt2Value
         return (bestSolution,valueBestSolution)
 
     def updatePheromones(self,solution,valueSolution):
@@ -156,8 +156,9 @@ def earliestDueDate(jobList):
 #         else:
 #             earliness[i] = lateness
 #     return sum(tardiness)
-def two_opt(route):
+def two_opt(route,jobList):
     best = route
+    bestValue = totalWeightedTardiness([jobList[i] for i in best])
     improved = True
     while improved:
         improved = False
@@ -166,11 +167,13 @@ def two_opt(route):
                 if j-i == 1: continue # changes nothing, skip then
                 new_route = route[:]
                 new_route[i:j] = route[j-1:i-1:-1] # this is the 2woptSwap
-                if totalWeightedTardiness(new_route) < totalWeightedTardiness(best):
+                actualValue = totalWeightedTardiness([jobList[i] for i in new_route])
+                if actualValue < bestValue:
                     best = new_route
+                    bestValue = actualValue
                     improved = True
         route = best
-    return (best,totalWeightedTardiness(best))
+    return (best,bestValue)
 
 
 def totalWeightedTardiness(jobList):
