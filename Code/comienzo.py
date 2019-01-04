@@ -9,11 +9,11 @@ class Ant(object):
         self.solution = [self.initialNode]
         self.probabilityMatrix = []
 
-    def getSolution(self,q0,pheromonesMatrix,heuristicList,jobList,alpha,beta,activatedWeight,aco_h):
+    def getSolution(self,q0,pheromonesMatrix,heuristicList,jobList,alpha,beta,activatedWeight,aco_h,aco_s):
         self.solution = [self.initialNode]
         self.actualNode = self.initialNode
         while len(self.solution)!=len(self.probabilityMatrix[0]):
-            self.actualNode = self.nextStep(q0,pheromonesMatrix,heuristicList,alpha,beta)
+            self.actualNode = self.nextStep(q0,pheromonesMatrix,heuristicList,alpha,beta,aco_s)
             self.solution.append(self.actualNode)
             heuristicList = self.updateHeuristic(jobList,self.solution,activatedWeight,aco_h)
         # print(self.solution)
@@ -78,8 +78,9 @@ class Job(object):
 
 class ACO_ACS(object):
 
-    def __init__(self,alphaP,betaP,pP,q0,jobListP,nAnts,n,activatedWeightP,activated2OptmP,h):
+    def __init__(self,alphaP,betaP,pP,q0,jobListP,nAnts,n,activatedWeightP,activated2OptmP,h,s):
         self.aco_h = h
+        self.aco_s = s
         self.alpha = alphaP
         self.beta = betaP
         self.p = pP
@@ -296,7 +297,7 @@ def creaJobs(problema):
     return sol
 datos = creaJobs(problema[0])
 
-prueba = ACO_ACS(1,1,0.1,0,datos,20,100,False,True,True)
+prueba = ACO_ACS(1,1,0.1,0,datos,20,100,False,True,True,False)
 # prueba.execute()
 # def probando():
 #     solution = float("inf")
