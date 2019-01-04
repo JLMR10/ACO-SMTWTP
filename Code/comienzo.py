@@ -341,4 +341,4 @@ def create():
             writing.write("\n {0}".format(i))
         writing.write("\n FIIIIIIIIIN")
         writing.closed
-        
+create()
