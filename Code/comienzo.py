@@ -63,7 +63,10 @@ class Ant(object):
                 heuristicList[i] = 0
             else:
                 if aco_h:
-                    heuristicList[i] = 1/(mddOp(processed,jobList[i],activatedWeight)-processed)
+                    if activatedWeight:
+                        heuristicList[i] = 1/(mddOp(processed,jobList[i],activatedWeight)-processed*jobList[i].weight)
+                    else:
+                        heuristicList[i] = 1/(mddOp(processed,jobList[i],activatedWeight)-processed)
                 else:
                     heuristicList[i] = 1/mddOp(processed,jobList[i],activatedWeight)
         return heuristicList
