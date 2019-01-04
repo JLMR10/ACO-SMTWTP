@@ -1,5 +1,4 @@
 import math,operator,copy,random
-# import networkx as nx
 
 class Ant(object):
     
@@ -10,15 +9,15 @@ class Ant(object):
         self.solution = [self.initialNode]
         self.probabilityMatrix = []
 
-    def getSolution(self,q0,pheromonesMatrix,heuristicMatrix):
+    def getSolution(self,q0,pheromonesMatrix,heuristicMatrix,alpha,beta):
         self.solution = [self.initialNode]
         self.actualNode = self.initialNode
         while len(self.solution)!=len(self.probabilityMatrix[0]):
-            self.actualNode = self.nextStep(q0,pheromonesMatrix,heuristicMatrix)
+            self.actualNode = self.nextStep(q0,pheromonesMatrix,heuristicMatrix,alpha,beta)
             self.solution.append(self.actualNode)
         # print(self.solution)
     
-    def nextStep(self,q0,pheromonesMatrix,heuristicMatrix):
+    def nextStep(self,q0,pheromonesMatrix,heuristicMatrix,alpha,beta):
         q = random.uniform(0,1)
         node = float("-inf")
         probabilityNodes = copy.copy(self.probabilityMatrix[self.actualNode])
@@ -26,7 +25,7 @@ class Ant(object):
             antValue = float("-inf")
             h = 0 
             for j in range(len(probabilityNodes)):
-                newAntValue = pheromonesMatrix[self.actualNode][j]*heuristicMatrix[self.actualNode][j]
+                newAntValue = (pheromonesMatrix[self.actualNode][j]**alpha)*(heuristicMatrix[self.actualNode][j]**beta)
                 if(j not in self.solution):
                     if(newAntValue>antValue):
                         antValue=newAntValue
@@ -77,7 +76,6 @@ class ACO(object):
         self.generations = n
         # self.i = 0
         self.size = len(self.jobList)
-        # self.graph = nx.complete_graph(self.size)
         self.pheromonesMatrix = initializePheromones(self.jobList)
         self.heuristicMatrix = initializeHeuristic(self.jobList)
         self.probabilityMatrix = calculateTrasitionProbability(self.alpha,self.beta,self.jobList,self.heuristicMatrix,self.pheromonesMatrix)
@@ -108,7 +106,7 @@ class ACO(object):
         bestSolution = []
         for ant in self.antList:
             ant.probabilityMatrix = self.probabilityMatrix
-            ant.getSolution(self.q0,self.pheromonesMatrix,self.heuristicMatrix)
+            ant.getSolution(self.q0,self.pheromonesMatrix,self.heuristicMatrix,self.alpha,self.beta)
             antJobList = []
             for i in ant.solution:
                 antJobList.append(self.jobList[i])
@@ -335,10 +333,3 @@ def probando():
     return (sch,solution)
 # pruebasol = probando()
 
-def create():
-    with open('data.py','w') as writing:
-        for i in range(100000000):
-            writing.write("\n {0}".format(i))
-        writing.write("\n FIIIIIIIIIN")
-        writing.closed
-create()
