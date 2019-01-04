@@ -1,5 +1,5 @@
 import math,operator,copy,random
-import networkx as nx
+# import networkx as nx
 
 class Ant(object):
     
@@ -77,7 +77,7 @@ class ACO(object):
         self.generations = n
         # self.i = 0
         self.size = len(self.jobList)
-        self.graph = nx.complete_graph(self.size)
+        # self.graph = nx.complete_graph(self.size)
         self.pheromonesMatrix = initializePheromones(self.jobList)
         self.heuristicMatrix = initializeHeuristic(self.jobList)
         self.probabilityMatrix = calculateTrasitionProbability(self.alpha,self.beta,self.jobList,self.heuristicMatrix,self.pheromonesMatrix)
@@ -98,9 +98,9 @@ class ACO(object):
                 h+=1
             j+=1
             solution = thisSolution
-            print(solution)
-        print(h,i,j)
-        print(solution)
+        #     print(solution)
+        # print(h,i,j)
+        # print(solution)
         return solution
     
     def iterate(self):
@@ -329,7 +329,14 @@ def probando():
         x,y = prueba.execute()
         if y<solution:
             solution = y
+            print(solution)
             sch = x
         i+=1
     return (sch,solution)
 pruebasol = probando()
+
+def create():
+    with open('data.py','w') as writing:
+        for i in range(1000):
+            writing.write(i)
+        writing.closed
