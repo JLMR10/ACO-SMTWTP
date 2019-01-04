@@ -63,9 +63,9 @@ class Job(object):
     def __str__(self):
         return ("Job")
 
-class ACO(object):
+class ACO_ACS(object):
 
-    def __init__(self,alphaP,betaP,pP,q0,jobListP,nAnts,n):
+    def __init__(self,alphaP,betaP,pP,q0,jobListP,nAnts,n,activatedWeightP,activated2OptmP):
         self.alpha = alphaP
         self.beta = betaP
         self.p = pP
@@ -74,31 +74,19 @@ class ACO(object):
         randomNodes = random.sample(range(len(jobListP)),nAnts)
         self.antList = [Ant(x) for x in randomNodes]
         self.generations = n
-        # self.i = 0
+        self.activatedWeight = activatedWeightP
+        self.activated2Opt = activated2OptmP
         self.size = len(self.jobList)
-        self.pheromonesMatrix = initializePheromones(self.jobList)
-        self.heuristicMatrix = initializeHeuristic(self.jobList)
+        self.pheromonesMatrix = initializePheromones(self.jobList,self.activatedWeight)
+        self.heuristicMatrix = initializeHeuristic(self.jobList,self.activatedWeight)
         self.probabilityMatrix = calculateTrasitionProbability(self.alpha,self.beta,self.jobList,self.heuristicMatrix,self.pheromonesMatrix)
-
-    def execute(self):
-        i = 0
-        j=0
-        h = 0
-        solution = []
         
-        while (j<self.generations and i<20):
-            # print(j)
-            thisSolution = self.iterate()
-            if thisSolution == solution:
-                i+=1
-            else:
-                i=0
-                h+=1
-            j+=1
-            solution = thisSolution
-        #     print(solution)
-        # print(h,i,j)
-        # print(solution)
+        
+    def execute(self):
+        i=0
+        while (i<self.generations):
+            solution = self.iterate()
+            i+=1
         return solution
     
     def iterate(self):
@@ -110,23 +98,20 @@ class ACO(object):
             antJobList = []
             for i in ant.solution:
                 antJobList.append(self.jobList[i])
-            ant.valueSolution = totalWeightedTardiness(antJobList)
-            # print("Hormiga ",ant.initialNode,"==== Solucion ",ant.solution,"Valor",ant.valueSolution)
+            ant.valueSolution = totalTardiness(antJobList,self.activatedWeight)
             if ant.valueSolution<valueBestSolution:
                 valueBestSolution = ant.valueSolution
                 bestSolution = ant.solution
-                # print("Mejor solucion %s y valor %s",bestSolution,valueBestSolution)
-        self.updatePheromones(bestSolution,valueBestSolution)
-        # print("Fin una iteración")
-        self.probabilityMatrix = calculateTrasitionProbability(self.alpha,self.beta,self.jobList,self.heuristicMatrix,self.pheromonesMatrix)
-        # if self.i<3:
-        #     print(self.probabilityMatrix)
+        
+        if self.activated2Opt:
+            opt2Solution,opt2Value = two_opt(bestSolution,self.jobList,self.activatedWeight)
+            if opt2Value < valueBestSolution:
+                bestSolution = opt2Solution
+                valueBestSolution = opt2Value
 
-        # self.i+=1
-        opt2Solution,opt2Value = two_opt(bestSolution,self.jobList)
-        if opt2Value < valueBestSolution:
-            bestSolution = opt2Solution
-            valueBestSolution = opt2Value
+        self.updatePheromones(bestSolution,valueBestSolution)
+        self.probabilityMatrix = calculateTrasitionProbability(self.alpha,self.beta,self.jobList,self.heuristicMatrix,self.pheromonesMatrix)
+
         return (bestSolution,valueBestSolution)
 
     def updatePheromones(self,solution,valueSolution):
@@ -144,28 +129,15 @@ class ACO(object):
             self.pheromonesMatrix[i][j] = self.pheromonesMatrix[i][j] + self.p*(1/valueSolution)
 
     def __str__(self):
-        return "ACO"
+        return "ACO_ACS"
 
 def earliestDueDate(jobList):
     return sorted(jobList, key=operator.attrgetter('dueDate'))
 
-# def totalTardiness(jobList):
-#     totalFlowTime = 0
-#     flowTimeOut = []
-#     earliness = [0]*len(jobList)
-#     tardiness = [0]*len(jobList)
-#     for i,job in enumerate(jobList):
-#         totalFlowTime += job.processingTime
-#         flowTimeOut.append(totalFlowTime)
-#         lateness = totalFlowTime-job.dueDate
-#         if lateness >= 0:
-#             tardiness[i] = lateness
-#         else:
-#             earliness[i] = lateness
-#     return sum(tardiness)
-def two_opt(route,jobList):
+
+def two_opt(route,jobList,activatedWeight):
     best = route
-    bestValue = totalWeightedTardiness([jobList[i] for i in best])
+    bestValue = totalTardiness([jobList[i] for i in best],activatedWeight)
     improved = True
     while improved:
         improved = False
@@ -174,7 +146,7 @@ def two_opt(route,jobList):
                 if j-i == 1: continue # changes nothing, skip then
                 new_route = route[:]
                 new_route[i:j] = route[j-1:i-1:-1] # this is the 2woptSwap
-                actualValue = totalWeightedTardiness([jobList[i] for i in new_route])
+                actualValue = totalTardiness([jobList[i] for i in new_route],activatedWeight)
                 if actualValue < bestValue:
                     best = new_route
                     bestValue = actualValue
@@ -183,44 +155,33 @@ def two_opt(route,jobList):
     return (best,bestValue)
 
 
-def totalWeightedTardiness(jobList):
+def totalTardiness(jobList,activatedWeight):
     totalFlowTime = 0
     flowTimeOut = []
-    earliness = [0]*len(jobList)
     tardiness = [0]*len(jobList)
     for i,job in enumerate(jobList):
         totalFlowTime += job.processingTime
         flowTimeOut.append(totalFlowTime)
         lateness = totalFlowTime-job.dueDate
         if lateness >= 0:
-            tardiness[i] = lateness*job.weight
-        else:
-            earliness[i] = lateness*job.weight
+            if activatedWeight:
+                tardiness[i] = lateness*job.weight
+            else:
+                tardiness[i] = lateness
     return sum(tardiness)
 
-def mddOp(processed, job):
-    return max(processed+job.processingTime,job.dueDate)*job.weight
+def mddOp(processed, job,activatedWeight):
+    value = 0
+    if activatedWeight:
+        value = max(processed+job.processingTime,job.dueDate)*job.weight
+    else:
+        value = max(processed+job.processingTime,job.dueDate)
+    return value
 
-def mddSort(jobList):
-    unsortedJobList = copy.copy(jobList)
-    sortedJobList = []
-    processed = 0
-    while unsortedJobList:
-        bestJob = unsortedJobList[0]
-        bestMdd = mddOp(processed,bestJob)
-        for job in unsortedJobList:
-            mdd = mddOp(processed,job)
-            if mdd < bestMdd:
-                bestMdd = mdd
-                bestJob = job
-        sortedJobList.append(bestJob)
-        unsortedJobList.remove(bestJob)
-        processed+=bestJob.processingTime
-    return sortedJobList
 
-def initializePheromones(unsortedJobList):
+def initializePheromones(unsortedJobList,activatedWeight):
     sortedJobList = earliestDueDate(unsortedJobList)
-    tedd = totalWeightedTardiness(sortedJobList)
+    tedd = totalTardiness(sortedJobList,activatedWeight)
     size = len(sortedJobList)
     t0 = 1/(len(unsortedJobList)*tedd)
     matrix = []
@@ -234,9 +195,8 @@ def initializePheromones(unsortedJobList):
         matrix.append(matrixJ)
     return matrix
 
-def initializeHeuristic(unsortedJobList):
+def initializeHeuristic(unsortedJobList,activatedWeight):
     size = len(unsortedJobList)
-    # return [[mddOp(0,job) for job in unsortedJobList] for i in range(size)]
     heuristicMatrix = [0]*size
     for i in range(size):
         heuristicMatrixJ = [0]*size
@@ -244,7 +204,7 @@ def initializeHeuristic(unsortedJobList):
             if i==j:
                 heuristicMatrixJ[j] = 0
             else:
-                heuristicMatrixJ[j] = 1/mddOp(unsortedJobList[i].processingTime,unsortedJobList[j])
+                heuristicMatrixJ[j] = 1/mddOp(unsortedJobList[i].processingTime,unsortedJobList[j],activatedWeight)
         heuristicMatrix[i] = heuristicMatrixJ
     return heuristicMatrix
 
@@ -300,7 +260,7 @@ def readExamplesGeneric(file,size):
 
 # def probando(heuristicMatrix,pheromonesMatrix):
 
-# prueba = ACO(1,1,0.1,0,vuelos,2,100)
+# prueba = ACO_ACS(1,1,0.1,0,vuelos,2,100)
 # ho = Ant(3)
 # ho.probabilityMatrix = prueba.probabilityMatrix
 # ho.getSolution()
@@ -316,20 +276,20 @@ def creaJobs(problema):
     return sol
 datos = creaJobs(problema[0])
 
-# prueba = ACO(1,1,0.1,0,datos,20,500)
+# prueba = ACO_ACS(1,1,0.1,0,datos,20,500)
 # prueba.execute()
-def probando():
-    solution = float("inf")
-    sch = []
-    i=0
-    while i<10:
-        prueba = ACO(1,1,0.1,0.9,datos,20,100)
-        x,y = prueba.execute()
-        if y<solution:
-            solution = y
-            print(solution)
-            sch = x
-        i+=1
-    return (sch,solution)
+# def probando():
+#     solution = float("inf")
+#     sch = []
+#     i=0
+#     while i<10:
+#         prueba = ACO_ACS(1,1,0.1,0.9,datos,20,100)
+#         x,y = prueba.execute()
+#         if y<solution:
+#             solution = y
+#             print(solution)
+#             sch = x
+#         i+=1
+#     return (sch,solution)
 # pruebasol = probando()
 
