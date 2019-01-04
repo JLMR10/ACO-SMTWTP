@@ -338,6 +338,7 @@ def probando():
 def create():
     with open('data.py','w') as writing:
         for i in range(100000000):
-            writing.write("{0}".format(i))
-        writing.write("/n FIIIIIIIIIN")
+            writing.write("\n {0}".format(i))
+        writing.write("\n FIIIIIIIIIN")
         writing.closed
+        
