@@ -18,7 +18,7 @@ class Ant(object):
             heuristicList = self.updateHeuristic(jobList,self.solution,activatedWeight,aco_h)
         # print(self.solution)
     
-    def nextStep(self,q0,pheromonesMatrix,heuristicList,alpha,beta):
+    def nextStep(self,q0,pheromonesMatrix,heuristicList,alpha,beta,aco_s):
         q = random.uniform(0,1)
         node = float("-inf")
         size = len(heuristicList)
@@ -26,7 +26,10 @@ class Ant(object):
             antValue = float("-inf")
             h = 0 
             for j in range(size):
-                newAntValue = (pheromonesMatrix[self.actualNode][j]**alpha)*(heuristicList[j]**beta)
+                if aco_s:
+                    newAntValue = (sum(pheromonesMatrix[k][j] for k in range(self.actualNode))**alpha)*(heuristicList[j]**beta)
+                else:
+                    newAntValue = (pheromonesMatrix[self.actualNode][j]**alpha)*(heuristicList[j]**beta)
                 if(j not in self.solution):
                     if(newAntValue>antValue):
                         antValue=newAntValue
@@ -35,8 +38,12 @@ class Ant(object):
         else:
             probabilityNodes = []
             for j in range(size):
-                numerator = (pheromonesMatrix[self.actualNode][j]**alpha)*(heuristicList[j]**beta)
-                denominator = sum((pheromonesMatrix[self.actualNode][h]**alpha)*(heuristicList[h]**beta) for h in range(size))
+                if aco_s:
+                    numerator = (sum(pheromonesMatrix[k][j] for k in range(self.actualNode))**alpha)*(heuristicList[j]**beta)
+                    denominator = sum((pheromonesMatrix[self.actualNode][h]**alpha)*(heuristicList[h]**beta) for h in range(size))
+                else:
+                    numerator = (pheromonesMatrix[self.actualNode][j]**alpha)*(heuristicList[j]**beta)
+                    denominator = sum((sum(pheromonesMatrix[k][h] for k in range(self.actualNode))**alpha)*(heuristicList[h]**beta) for h in range(size))
                 probabilityNodes.append(numerator/denominator)
 
             acc = 0
@@ -94,7 +101,7 @@ class ACO_ACS(object):
         self.size = len(self.jobList)
         self.pheromonesMatrix = initializePheromones(self.jobList,self.activatedWeight)
         self.heuristicMatrix = initializeHeuristic(self.jobList,self.activatedWeight,self.aco_h)
-        self.probabilityMatrix = calculateTrasitionProbability(self.alpha,self.beta,self.jobList,self.heuristicMatrix,self.pheromonesMatrix)
+        self.probabilityMatrix = calculateTrasitionProbability(self.alpha,self.beta,self.jobList,self.heuristicMatrix,self.pheromonesMatrix,self.aco_s)
         
         
     def execute(self):
@@ -125,7 +132,7 @@ class ACO_ACS(object):
                 valueBestSolution = opt2Value
 
         self.updatePheromones(bestSolution,valueBestSolution)
-        self.probabilityMatrix = calculateTrasitionProbability(self.alpha,self.beta,self.jobList,self.heuristicMatrix,self.pheromonesMatrix)
+        self.probabilityMatrix = calculateTrasitionProbability(self.alpha,self.beta,self.jobList,self.heuristicMatrix,self.pheromonesMatrix,self.aco_s)
 
         return (bestSolution,valueBestSolution)
 
@@ -229,14 +236,18 @@ def initializeHeuristic(unsortedJobList,activatedWeight,aco_h):
 
 
 
-def calculateTrasitionProbability(alpha,beta,unsortedJobList,heuristicMatrix,pheromonesMatrix):
+def calculateTrasitionProbability(alpha,beta,unsortedJobList,heuristicMatrix,pheromonesMatrix,aco_s):
     size = len(unsortedJobList)
     probabilityMatrix = []
     for i in range(size):
         probabilityMatrixJ = []
         for j in range(size):
-            numerator = (pheromonesMatrix[i][j]**alpha)*(heuristicMatrix[i][j]**beta)
-            denominator = sum((pheromonesMatrix[i][h]**alpha)*(heuristicMatrix[i][h]**beta) for h in range(size))
+            if aco_s:
+                numerator = (sum(pheromonesMatrix[k][j] for k in range(i))**alpha)*(heuristicMatrix[i][j]**beta)
+                denominator = sum((sum(pheromonesMatrix[k][h] for k in range(i))**alpha)*(heuristicMatrix[i][h]**beta) for h in range(size))
+            else:
+                numerator = (pheromonesMatrix[i][j]**alpha)*(heuristicMatrix[i][j]**beta)
+                denominator = sum((pheromonesMatrix[i][h]**alpha)*(heuristicMatrix[i][h]**beta) for h in range(size))
             probabilityMatrixJ.append(numerator/denominator)
         probabilityMatrix.append(probabilityMatrixJ)
     return probabilityMatrix
