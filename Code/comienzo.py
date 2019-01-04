@@ -9,44 +9,57 @@ class Ant(object):
         self.solution = [self.initialNode]
         self.probabilityMatrix = []
 
-    def getSolution(self,q0,pheromonesMatrix,heuristicMatrix,alpha,beta):
+    def getSolution(self,q0,pheromonesMatrix,heuristicList,jobList,alpha,beta,activatedWeight,aco_h):
         self.solution = [self.initialNode]
         self.actualNode = self.initialNode
         while len(self.solution)!=len(self.probabilityMatrix[0]):
-            self.actualNode = self.nextStep(q0,pheromonesMatrix,heuristicMatrix,alpha,beta)
+            self.actualNode = self.nextStep(q0,pheromonesMatrix,heuristicList,alpha,beta)
             self.solution.append(self.actualNode)
+            heuristicList = self.updateHeuristic(jobList,self.solution,activatedWeight,aco_h)
         # print(self.solution)
     
-    def nextStep(self,q0,pheromonesMatrix,heuristicMatrix,alpha,beta):
+    def nextStep(self,q0,pheromonesMatrix,heuristicList,alpha,beta):
         q = random.uniform(0,1)
         node = float("-inf")
-        probabilityNodes = copy.copy(self.probabilityMatrix[self.actualNode])
+        size = len(heuristicList)
         if(q<=q0):
             antValue = float("-inf")
             h = 0 
-            for j in range(len(probabilityNodes)):
-                newAntValue = (pheromonesMatrix[self.actualNode][j]**alpha)*(heuristicMatrix[self.actualNode][j]**beta)
+            for j in range(size):
+                newAntValue = (pheromonesMatrix[self.actualNode][j]**alpha)*(heuristicList[j]**beta)
                 if(j not in self.solution):
                     if(newAntValue>antValue):
                         antValue=newAntValue
                         h = j
             node = h
         else:
+            probabilityNodes = []
+            for j in range(size):
+                numerator = (pheromonesMatrix[self.actualNode][j]**alpha)*(heuristicList[j]**beta)
+                denominator = sum((pheromonesMatrix[self.actualNode][h]**alpha)*(heuristicList[h]**beta) for h in range(size))
+                probabilityNodes.append(numerator/denominator)
 
-            for node in self.solution:
-                probabilityNodes[node] = 0
-            probabilityNodes = [probabilityNodes[i]/sum(probabilityNodes) for i in range(len(probabilityNodes))]
             acc = 0
             for i,probability in enumerate(probabilityNodes):
                 acc+=probability
-                # print("prob",probability,"Acc",acc,"----",antProbability)
                 if acc>q:
                     node = i
-                    # print(node)
                     break
-            # print("========")
         return node
 
+    def updateHeuristic(self,jobList,solution,activatedWeight,aco_h):
+        size = len(jobList)
+        heuristicList = [0]*size
+        processed = sum(jobList[i].processingTime for i in solution)
+        for i in range(size):
+            if i in solution:
+                heuristicList[i] = 0
+            else:
+                if aco_h:
+                    heuristicList[i] = 1/(mddOp(processed,jobList[i],activatedWeight)-processed)
+                else:
+                    heuristicList[i] = 1/mddOp(processed,jobList[i],activatedWeight)
+        return heuristicList
 
     def __str__(self):
         return ("esta hormiga tiene un coste de %s y un beneficio de %s con la solución: %s",(self.solution))
@@ -65,7 +78,8 @@ class Job(object):
 
 class ACO_ACS(object):
 
-    def __init__(self,alphaP,betaP,pP,q0,jobListP,nAnts,n,activatedWeightP,activated2OptmP):
+    def __init__(self,alphaP,betaP,pP,q0,jobListP,nAnts,n,activatedWeightP,activated2OptmP,h):
+        self.aco_h = h
         self.alpha = alphaP
         self.beta = betaP
         self.p = pP
@@ -78,7 +92,7 @@ class ACO_ACS(object):
         self.activated2Opt = activated2OptmP
         self.size = len(self.jobList)
         self.pheromonesMatrix = initializePheromones(self.jobList,self.activatedWeight)
-        self.heuristicMatrix = initializeHeuristic(self.jobList,self.activatedWeight)
+        self.heuristicMatrix = initializeHeuristic(self.jobList,self.activatedWeight,self.aco_h)
         self.probabilityMatrix = calculateTrasitionProbability(self.alpha,self.beta,self.jobList,self.heuristicMatrix,self.pheromonesMatrix)
         
         
@@ -94,7 +108,7 @@ class ACO_ACS(object):
         bestSolution = []
         for ant in self.antList:
             ant.probabilityMatrix = self.probabilityMatrix
-            ant.getSolution(self.q0,self.pheromonesMatrix,self.heuristicMatrix,self.alpha,self.beta)
+            ant.getSolution(self.q0,self.pheromonesMatrix,self.heuristicMatrix[ant.initialNode],self.jobList,self.alpha,self.beta,self.activatedWeight,self.aco_h)
             antJobList = []
             for i in ant.solution:
                 antJobList.append(self.jobList[i])
@@ -130,6 +144,7 @@ class ACO_ACS(object):
 
     def __str__(self):
         return "ACO_ACS"
+
 
 def earliestDueDate(jobList):
     return sorted(jobList, key=operator.attrgetter('dueDate'))
@@ -195,7 +210,7 @@ def initializePheromones(unsortedJobList,activatedWeight):
         matrix.append(matrixJ)
     return matrix
 
-def initializeHeuristic(unsortedJobList,activatedWeight):
+def initializeHeuristic(unsortedJobList,activatedWeight,aco_h):
     size = len(unsortedJobList)
     heuristicMatrix = [0]*size
     for i in range(size):
@@ -204,9 +219,13 @@ def initializeHeuristic(unsortedJobList,activatedWeight):
             if i==j:
                 heuristicMatrixJ[j] = 0
             else:
-                heuristicMatrixJ[j] = 1/mddOp(unsortedJobList[i].processingTime,unsortedJobList[j],activatedWeight)
+                if aco_h:
+                    heuristicMatrixJ[j] = 1/(mddOp(unsortedJobList[i].processingTime,unsortedJobList[j],activatedWeight)-unsortedJobList[i].processingTime)
+                else:
+                    heuristicMatrixJ[j] = 1/mddOp(unsortedJobList[i].processingTime,unsortedJobList[j],activatedWeight)
         heuristicMatrix[i] = heuristicMatrixJ
     return heuristicMatrix
+
 
 
 def calculateTrasitionProbability(alpha,beta,unsortedJobList,heuristicMatrix,pheromonesMatrix):
@@ -220,6 +239,7 @@ def calculateTrasitionProbability(alpha,beta,unsortedJobList,heuristicMatrix,phe
             probabilityMatrixJ.append(numerator/denominator)
         probabilityMatrix.append(probabilityMatrixJ)
     return probabilityMatrix
+
 
 problema = [Job(1,26,1,179),Job(2,24,10,183),Job(3,79,9,196),Job(4,46,4,202),Job(5,32,3,192)]
 vuelos = [Job(0,8,2,12),Job(1,9,5,18),Job(2,5,2,10),Job(3,6,8,14)]
@@ -276,7 +296,7 @@ def creaJobs(problema):
     return sol
 datos = creaJobs(problema[0])
 
-# prueba = ACO_ACS(1,1,0.1,0,datos,20,500)
+prueba = ACO_ACS(1,1,0.1,0,datos,20,100,False,True,True)
 # prueba.execute()
 # def probando():
 #     solution = float("inf")
