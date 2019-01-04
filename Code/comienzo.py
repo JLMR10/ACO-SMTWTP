@@ -333,10 +333,10 @@ def probando():
             sch = x
         i+=1
     return (sch,solution)
-pruebasol = probando()
+# pruebasol = probando()
 
 def create():
     with open('data.py','w') as writing:
-        for i in range(1000):
-            writing.write(i)
+        for i in range(100000000):
+            writing.write("{0}".format(i))
         writing.closed
