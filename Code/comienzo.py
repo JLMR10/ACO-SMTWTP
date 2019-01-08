@@ -57,8 +57,8 @@ class Ant(object):
             probabilityNodes = []
             for j in range(size):
                 if aco_s:
-                    numerator = (sum(pheromonesMatrix[k][j] for k in range(self.actualNode))**alpha)*(heuristicList[j]**beta)
-                    denominator = sum((sum(pheromonesMatrix[k][h] for k in range(self.actualNode))**alpha)*(heuristicList[h]**beta) for h in range(size))
+                    numerator = (sum(pheromonesMatrix[k][j] for k in range(self.actualNode+1))**alpha)*(heuristicList[j]**beta)
+                    denominator = sum((sum(pheromonesMatrix[k][h] for k in range(self.actualNode+1))**alpha)*(heuristicList[h]**beta) for h in range(size))
                 else:
                     numerator = (pheromonesMatrix[self.actualNode][j]**alpha)*(heuristicList[j]**beta)
                     denominator = sum((pheromonesMatrix[self.actualNode][h]**alpha)*(heuristicList[h]**beta) for h in range(size))
@@ -107,7 +107,7 @@ class Job(object):
     def __str__(self):
         return ("Job")
 
-class ACO_ACS(object):
+class ACO(object):
 
     def __init__(self,alphaP,betaP,pP,q0,jobListP,nAnts,n,activatedWeightP,activated2OptmP,h,s,d):
         self.aco_h = h
@@ -133,7 +133,6 @@ class ACO_ACS(object):
         i=0
         while (i<self.generations):
             solution = self.iterate()
-            print("OKA")
             i+=1
         return solution
     
@@ -177,7 +176,7 @@ class ACO_ACS(object):
             self.pheromonesMatrix[i][j] = self.pheromonesMatrix[i][j] + self.p*(1/valueSolution)
 
     def __str__(self):
-        return "ACO_ACS"
+        return "ACO"
 
 
 def earliestDueDate(jobList):
@@ -269,13 +268,13 @@ def calculateTrasitionProbability(alpha,beta,unsortedJobList,heuristicMatrix,phe
         probabilityMatrixJ = []
         for j in range(size):
             if aco_s:
-                numerator = (sum(pheromonesMatrix[k][j] for k in range(i))**alpha)*(heuristicMatrix[i][j]**beta)
-                denominator = sum((sum(pheromonesMatrix[k][h] for k in range(i))**alpha)*(heuristicMatrix[i][h]**beta) for h in range(size))
+                numerator = (sum(pheromonesMatrix[k][j] for k in range(i+1))**alpha)*(heuristicMatrix[i][j]**beta)
+                denominator = sum((sum(pheromonesMatrix[k][h] for k in range(i+1))**alpha)*(heuristicMatrix[i][h]**beta) for h in range(size))
             else:
                 numerator = (pheromonesMatrix[i][j]**alpha)*(heuristicMatrix[i][j]**beta)
                 denominator = sum((pheromonesMatrix[i][h]**alpha)*(heuristicMatrix[i][h]**beta) for h in range(size))
             if i!=j:
-                print(numerator)
+                # print(numerator)
                 probabilityMatrixJ.append(numerator/denominator)
         probabilityMatrix.append(probabilityMatrixJ)
     return probabilityMatrix
@@ -320,13 +319,13 @@ def readExamplesGeneric(file,size):
 
 # def probando(heuristicMatrix,pheromonesMatrix):
 
-# prueba = ACO_ACS(1,1,0.1,0,vuelos,2,100)
+# prueba = ACO(1,1,0.1,0,vuelos,2,100)
 # ho = Ant(3)
 # ho.probabilityMatrix = prueba.probabilityMatrix
 # ho.getSolution()
 # prueba.execute()
 
-problema = readExamplesGeneric("wt40.txt",40)
+problema = readExamplesGeneric("wt100.txt",100)
 def creaJobs(problema):
     sol = []
     i = 0
@@ -335,21 +334,31 @@ def creaJobs(problema):
         i+=1
     return sol
 datos = creaJobs(problema[0])
-#(alphaP,betaP,pP,q0,jobListP,nAnts,n,activatedWeightP,activated2OptmP,h,s,d)
-prueba = ACO_ACS(1,1,0.1,0,datos,20,100,True,True,False,True,False)
-prueba.execute()
-# def probando():
-#     solution = float("inf")
-#     sch = []
-#     i=0
-#     while i<10:
-#         prueba = ACO_ACS(1,1,0.1,0.9,datos,20,100)
-#         x,y = prueba.execute()
-#         if y<solution:
-#             solution = y
-#             print(solution)
-#             sch = x
-#         i+=1
-#     return (sch,solution)
-# pruebasol = probando()
 
+# prueba = ACO(1,1,0.1,0.9,datos,20,100,False,True,True,False,True)
+# prueba.execute()
+
+def test():
+    with open('data.py','w') as file:
+        bestSolution = float("inf")
+        averageValue = 1
+        averageAcc = 0
+        i=0
+        while i<200:
+            for datos in problema:
+                jobList = creaJobs(datos)
+                #Parameters ACO -> (alpha,beta,p,q0,jobList,nAnts,nGens,weighted,2opt,aco_h,aco_s,aco_d)
+                aco = ACO(1,1,0.1,0,jobList,20,200,False,True,False,False,False)
+                x,actualSolution = aco.execute()
+                averageValue = averageValue*averageAcc + actualSolution
+                averageAcc+=1
+                averageValue = averageValue/averageAcc
+                if actualSolution < bestSolution:
+                    bestSolution = actualSolution
+                    file.write("Best solution until {0} : {1}".format(i,bestSolution))
+            i+=1
+        file.write("Best solution found: {0}".format(bestSolution))
+        file.write("Average Value: {0}".format(averageValue))
+        file.write("Average acc: {0}".format(averageAcc))
+    file.closed
+test()
