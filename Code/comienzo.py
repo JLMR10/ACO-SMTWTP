@@ -333,7 +333,6 @@ def creaJobs(problema):
         sol.append(Job(i,float(p),float(w),float(d)))
         i+=1
     return sol
-datos = creaJobs(problema[0])
 
 # prueba = ACO(1,1,0.1,0.9,datos,20,100,False,True,True,False,True)
 # prueba.execute()
@@ -348,7 +347,7 @@ def test():
             for datos in problema:
                 jobList = creaJobs(datos)
                 #Parameters ACO -> (alpha,beta,p,q0,jobList,nAnts,nGens,weighted,2opt,aco_h,aco_s,aco_d)
-                aco = ACO(1,1,0.1,0,jobList,20,200,False,True,False,False,False)
+                aco = ACO(1,1,0.1,0,jobList,20,200,False,True,True,False,False)
                 x,actualSolution = aco.execute()
                 averageValue = averageValue*averageAcc + actualSolution
                 averageAcc+=1
