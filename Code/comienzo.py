@@ -136,7 +136,6 @@ class ACO(object):
         while (i<self.generations):
             solution = self.iterate()
             i+=1
-        print(solution)
         return solution
     
     def iterate(self):
