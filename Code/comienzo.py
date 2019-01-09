@@ -361,14 +361,14 @@ def test():
             for datos in problema:
                 jobList = creaJobs(datos)
                 #Parameters ACO -> (alpha,beta,p,q0,jobList,nAnts,nGens,weighted,2opt,aco_h,aco_s,aco_d)
-                aco = ACO(1,1,0.1,0,jobList,20,200,False,True,False,False,False)
+                aco = ACO(1,1,0.1,0,jobList,20,200,False,True,True,False,False)
                 x,actualSolution = aco.execute()
                 averageValue = averageValue*averageAcc + actualSolution
                 averageAcc+=1
                 averageValue = averageValue/averageAcc
                 if actualSolution < bestSolution:
                     bestSolution = actualSolution
-                    file.write("Best solution until {0} : {1} = {2}---".format(i,j,bestSolution))
+                    file.write("Best solution until {0} : {1} = {2}\n".format(i,j,bestSolution))
                 j+=1
             i+=1
         file.write("\n Best solution found: {0}".format(bestSolution))
