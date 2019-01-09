@@ -1,0 +1,19 @@
+cambia para weight y para aco_h
+
+-- 
+
+function initialHeuristic(jobList)
+    size = jobList.size
+    heuristicMatrix = empty list 
+    for i=0 to size
+        heuristicList = empty list
+        for j=0 to size
+            if i==jobList
+                heuristicList.add(0)
+            else
+                heuristicList.add(1/mddOperation(initial time processed,job j))
+        heuristicMatrix.add(heuristicList)
+    return heuristicMatrix
+
+function mddOperation(processedTime,job)
+    return max(processedTime+processingTime from job,dueDate from job)

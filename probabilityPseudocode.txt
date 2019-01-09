@@ -1,0 +1,20 @@
+function calculateProbability(alpha,beta,jobList,heuristicMatrix,pheromonesMatrix)
+    size = jobList.size
+    probabilityMatrix = empty list
+    for i=0 to size
+        probabilityList = empty list
+        denominator = 0
+        for h=0 to size
+            denominator += (pheromonesMatrix[i][h]**alpha)*(heuristicMatrix[i][h]**beta)
+
+        for j=0 to size
+            numerator = (pheromonesMatrix[i][j]**alpha)*(heuristicMatrix[i][j]**beta)
+            if i!=j:
+                probabilityList.add(numerator/denominator)
+            else:
+                probabilityList.add(0)
+                
+        probabilityMatrix.add(probabilityList)
+    return probabilityMatrix
+
+es igual para weighted y no, y para 2otp y no, cambia solo en aco_s

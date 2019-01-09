@@ -9,7 +9,7 @@ class Ant(object):
         self.solution = [self.initialNode]
         self.probabilityMatrix = []
 
-    def getSolution(self,q0,pheromonesMatrix,heuristicList,jobList,alpha,beta,activatedWeight,aco_h,aco_s,aco_d):
+    def getSolution(self,q0,pheromonesMatrix,heuristicList,jobList,t0,p,alpha,beta,activatedWeight,aco_h,aco_s,aco_d):
         self.solution = [self.initialNode]
         self.actualNode = self.initialNode
         if aco_d:
@@ -26,6 +26,8 @@ class Ant(object):
             self.actualNode = self.nextStep(q0,jobList,pheromonesMatrix,heuristicList,alpha,beta,aco_s)
             self.solution.append(self.actualNode)
             heuristicList = self.updateHeuristic(jobList,self.solution,activatedWeight,aco_h)
+            pheromonesMatrix[self.solution[-2]][self.solution[-1]] = (1-p)*pheromonesMatrix[self.solution[-2]][self.solution[-1]] + p*t0
+
 
         if aco_d:
             for sortedJob in sortedJobListNoSolution:
@@ -124,7 +126,7 @@ class ACO(object):
         self.activatedWeight = activatedWeightP
         self.activated2Opt = activated2OptmP
         self.size = len(self.jobList)
-        self.pheromonesMatrix = initializePheromones(self.jobList,self.activatedWeight)
+        self.pheromonesMatrix,self.t0 = initializePheromones(self.jobList,self.activatedWeight,nAnts)
         self.heuristicMatrix = initializeHeuristic(self.jobList,self.activatedWeight,self.aco_h)
         self.probabilityMatrix = calculateTrasitionProbability(self.alpha,self.beta,self.jobList,self.heuristicMatrix,self.pheromonesMatrix,self.aco_s)
         
@@ -141,7 +143,7 @@ class ACO(object):
         bestSolution = []
         for ant in self.antList:
             ant.probabilityMatrix = self.probabilityMatrix
-            ant.getSolution(self.q0,self.pheromonesMatrix,self.heuristicMatrix[ant.initialNode],self.jobList,self.alpha,self.beta,self.activatedWeight,self.aco_h,self.aco_s,self.aco_d)
+            ant.getSolution(self.q0,self.pheromonesMatrix,self.heuristicMatrix[ant.initialNode],self.jobList,self.t0,self.p,self.alpha,self.beta,self.activatedWeight,self.aco_h,self.aco_s,self.aco_d)
             antJobList = []
             for i in ant.solution:
                 antJobList.append(self.jobList[i])
@@ -227,11 +229,11 @@ def mddOp(processed, job,activatedWeight):
     return value
 
 
-def initializePheromones(unsortedJobList,activatedWeight):
+def initializePheromones(unsortedJobList,activatedWeight,nAnts):
     sortedJobList = earliestDueDate(unsortedJobList)
     tedd = totalTardiness(sortedJobList,activatedWeight)
     size = len(sortedJobList)
-    t0 = 1/(len(unsortedJobList)*tedd)
+    t0 = 1/(nAnts*tedd)
     matrix = []
     for i in range(size):
         matrixJ = []
@@ -241,7 +243,7 @@ def initializePheromones(unsortedJobList,activatedWeight):
             else:
                 matrixJ.append(t0)
         matrix.append(matrixJ)
-    return matrix
+    return matrix,t0
 
 def initializeHeuristic(unsortedJobList,activatedWeight,aco_h):
     size = len(unsortedJobList)
@@ -274,8 +276,9 @@ def calculateTrasitionProbability(alpha,beta,unsortedJobList,heuristicMatrix,phe
                 numerator = (pheromonesMatrix[i][j]**alpha)*(heuristicMatrix[i][j]**beta)
                 denominator = sum((pheromonesMatrix[i][h]**alpha)*(heuristicMatrix[i][h]**beta) for h in range(size))
             if i!=j:
-                # print(numerator)
                 probabilityMatrixJ.append(numerator/denominator)
+            else:
+                probabilityMatrixJ.append(0)
         probabilityMatrix.append(probabilityMatrixJ)
     return probabilityMatrix
 
@@ -343,21 +346,22 @@ def test():
         averageValue = 1
         averageAcc = 0
         i=0
-        while i<200:
+        file.write("??????")
+        while i<1:
             for datos in problema:
                 jobList = creaJobs(datos)
                 #Parameters ACO -> (alpha,beta,p,q0,jobList,nAnts,nGens,weighted,2opt,aco_h,aco_s,aco_d)
-                aco = ACO(1,1,0.1,0,jobList,20,200,False,True,True,False,False)
+                aco = ACO(1,1,0.1,0,jobList,20,50,False,True,True,False,False)
                 x,actualSolution = aco.execute()
                 averageValue = averageValue*averageAcc + actualSolution
                 averageAcc+=1
                 averageValue = averageValue/averageAcc
                 if actualSolution < bestSolution:
                     bestSolution = actualSolution
-                    file.write("Best solution until {0} : {1}".format(i,bestSolution))
+                    file.write("Best solution until {0} : {1} ---".format(i,bestSolution))
             i+=1
-        file.write("Best solution found: {0}".format(bestSolution))
-        file.write("Average Value: {0}".format(averageValue))
-        file.write("Average acc: {0}".format(averageAcc))
+        file.write("\n Best solution found: {0}".format(bestSolution))
+        file.write("\n Average Value: {0}".format(averageValue))
+        file.write("\n Average acc: {0}".format(averageAcc))
     file.closed
 test()
