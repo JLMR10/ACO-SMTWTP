@@ -175,6 +175,8 @@ class ACO(object):
                 self.pheromonesMatrix[i][j] = (1-self.p)*self.pheromonesMatrix[i][j]
 
         for i,j in affectedArcs:
+            if valueSolution == 0:
+                valueSolution = 1
             self.pheromonesMatrix[i][j] = self.pheromonesMatrix[i][j] + self.p*(1/valueSolution)
 
     def __str__(self):
@@ -238,7 +240,9 @@ def initializePheromones(unsortedJobList,activatedWeight,nAnts):
         file.closed
         tedd = 1
     size = len(sortedJobList)
+    print("este es el tedd = {1} y estas las nAnts = {2}",(tedd,nAnts))
     t0 = 1/(nAnts*tedd)
+    print("este es el t0 = {1}",(t0))
     matrix = []
     for i in range(size):
         matrixJ = []
