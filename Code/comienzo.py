@@ -136,6 +136,7 @@ class ACO(object):
         while (i<self.generations):
             solution = self.iterate()
             i+=1
+        print(solution)
         return solution
     
     def iterate(self):
@@ -232,6 +233,11 @@ def mddOp(processed, job,activatedWeight):
 def initializePheromones(unsortedJobList,activatedWeight,nAnts):
     sortedJobList = earliestDueDate(unsortedJobList)
     tedd = totalTardiness(sortedJobList,activatedWeight)
+    if tedd==0:
+        with open('data2.py','w') as file:
+            file.write("Hay un 0!")
+        file.closed
+        tedd = 1
     size = len(sortedJobList)
     t0 = 1/(nAnts*tedd)
     matrix = []
@@ -328,7 +334,7 @@ def readExamplesGeneric(file,size):
 # ho.getSolution()
 # prueba.execute()
 
-problema = readExamplesGeneric("wt100.txt",100)
+problema = readExamplesGeneric("wt40.txt",40)
 def creaJobs(problema):
     sol = []
     i = 0
@@ -351,7 +357,7 @@ def test():
             for datos in problema:
                 jobList = creaJobs(datos)
                 #Parameters ACO -> (alpha,beta,p,q0,jobList,nAnts,nGens,weighted,2opt,aco_h,aco_s,aco_d)
-                aco = ACO(1,1,0.1,0,jobList,20,50,False,True,True,False,False)
+                aco = ACO(1,1,0.1,0,jobList,20,5,False,True,True,False,False)
                 x,actualSolution = aco.execute()
                 averageValue = averageValue*averageAcc + actualSolution
                 averageAcc+=1
