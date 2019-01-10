@@ -88,7 +88,7 @@ class Ant(object):
             else:
                 if aco_h:
                     if activatedWeight:
-                        heuristicList[i] = (jobList[i].weight/normalizedWeightValue)/(mddOp(processed,jobList[i])-processed*jobList[i])
+                        heuristicList[i] = (jobList[i].weight/normalizedWeightValue)/(mddOp(processed,jobList[i])-processed)
                     else:
                         heuristicList[i] = 1/(mddOp(processed,jobList[i])-processed)
                 else:
@@ -365,7 +365,7 @@ def test():
             for datos in problema:
                 jobList = creaJobs(datos)
                 #Parameters ACO -> (alpha,beta,p,q0,jobList,nAnts,nGens,weighted,2opt,aco_h,aco_s,aco_d)
-                aco = ACO(1,1,0.1,0,jobList,20,200,False,True,False,False,False)
+                aco = ACO(1,1,0.1,0,jobList,10,200,True,True,True,False,False)
                 x,actualSolution = aco.execute()
                 averageValue = averageValue*averageAcc + actualSolution
                 averageAcc+=1
