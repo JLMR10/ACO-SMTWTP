@@ -354,12 +354,12 @@ def test():
         averageAcc = 0
         i=0
         file.write("??????")
-        while i<100:
+        while i<50:
             j = 0
             for datos in problema:
                 jobList = creaJobs(datos)
                 #Parameters ACO -> (alpha,beta,p,q0,jobList,nAnts,nGens,weighted,2opt,aco_h,aco_s,aco_d)
-                aco = ACO(1,1,0.1,0,jobList,20,200,False,True,False,True,False)
+                aco = ACO(1,1,0.1,0,jobList,20,200,False,True,True,True,False)
                 x,actualSolution = aco.execute()
                 averageValue = averageValue*averageAcc + actualSolution
                 averageAcc+=1
