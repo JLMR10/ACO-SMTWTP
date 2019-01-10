@@ -240,9 +240,7 @@ def initializePheromones(unsortedJobList,activatedWeight,nAnts):
         file.closed
         tedd = 1
     size = len(sortedJobList)
-    print("este es el tedd = {1} y estas las nAnts = {2}",(tedd,nAnts))
     t0 = 1/(nAnts*tedd)
-    print("este es el t0 = {1}",(t0))
     matrix = []
     for i in range(size):
         matrixJ = []
@@ -361,7 +359,7 @@ def test():
             for datos in problema:
                 jobList = creaJobs(datos)
                 #Parameters ACO -> (alpha,beta,p,q0,jobList,nAnts,nGens,weighted,2opt,aco_h,aco_s,aco_d)
-                aco = ACO(1,1,0.1,0,jobList,20,200,False,True,True,False,False)
+                aco = ACO(1,1,0.1,0,jobList,20,200,False,True,False,True,False)
                 x,actualSolution = aco.execute()
                 averageValue = averageValue*averageAcc + actualSolution
                 averageAcc+=1
