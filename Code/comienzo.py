@@ -81,17 +81,21 @@ class Ant(object):
         heuristicList = [0]*size
         # print(solution)
         processed = sum(jobList[i].processingTime for i in solution)
+        normalizedWeightValue = sum(jobList[j].weight for j in jobList)
         for i in range(size):
             if i in solution:
                 heuristicList[i] = 0
             else:
                 if aco_h:
                     if activatedWeight:
-                        heuristicList[i] = 1/(mddOp(processed,jobList[i],activatedWeight)-processed*jobList[i].weight)
+                        heuristicList[i] = (jobList[i]/normalizedWeightValue)/(mddOp(processed,jobList[i])-processed*jobList[i])
                     else:
-                        heuristicList[i] = 1/(mddOp(processed,jobList[i],activatedWeight)-processed)
+                        heuristicList[i] = 1/(mddOp(processed,jobList[i])-processed)
                 else:
-                    heuristicList[i] = 1/mddOp(processed,jobList[i],activatedWeight)
+                    if activatedWeight:
+                        heuristicList[i] = (jobList[i]/normalizedWeightValue)/mddOp(processed,jobList[i])
+                    else:
+                        heuristicList[i] = 1/mddOp(processed,jobList[i])
         return heuristicList
 
     def __str__(self):
@@ -222,13 +226,8 @@ def totalTardiness(jobList,activatedWeight):
                 tardiness[i] = lateness
     return sum(tardiness)
 
-def mddOp(processed, job,activatedWeight):
-    value = 0
-    if activatedWeight:
-        value = max(processed+job.processingTime,job.dueDate)*job.weight
-    else:
-        value = max(processed+job.processingTime,job.dueDate)
-    return value
+def mddOp(processed, job):
+    return max(processed+job.processingTime,job.dueDate)
 
 
 def initializePheromones(unsortedJobList,activatedWeight,nAnts):
@@ -255,6 +254,7 @@ def initializePheromones(unsortedJobList,activatedWeight,nAnts):
 def initializeHeuristic(unsortedJobList,activatedWeight,aco_h):
     size = len(unsortedJobList)
     heuristicMatrix = [0]*size
+    normalizedWeightValue = sum(unsortedJobList[j].weight for j in unsortedJobList)
     for i in range(size):
         heuristicMatrixJ = [0]*size
         for j in range(size):
@@ -262,9 +262,15 @@ def initializeHeuristic(unsortedJobList,activatedWeight,aco_h):
                 heuristicMatrixJ[j] = 0
             else:
                 if aco_h:
-                    heuristicMatrixJ[j] = 1/(mddOp(unsortedJobList[i].processingTime,unsortedJobList[j],activatedWeight)-unsortedJobList[i].processingTime)
+                    if activatedWeight:
+                        heuristicMatrixJ[j] = (unsortedJobList[i]/normalizedWeightValue)/(mddOp(unsortedJobList[i].processingTime,unsortedJobList[j])-unsortedJobList[i].processingTime)
+                    else:
+                        heuristicMatrixJ[j] = 1/(mddOp(unsortedJobList[i].processingTime,unsortedJobList[j])-unsortedJobList[i].processingTime)
                 else:
-                    heuristicMatrixJ[j] = 1/mddOp(unsortedJobList[i].processingTime,unsortedJobList[j],activatedWeight)
+                    if activatedWeight:
+                        heuristicMatrixJ[j] = (unsortedJobList[i]/normalizedWeightValue)/mddOp(unsortedJobList[i].processingTime,unsortedJobList[j])
+                    else:
+                        heuristicMatrixJ[j] = 1/mddOp(unsortedJobList[i].processingTime,unsortedJobList[j])
         heuristicMatrix[i] = heuristicMatrixJ
     return heuristicMatrix
 

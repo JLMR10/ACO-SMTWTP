@@ -2,7 +2,7 @@ cambia para weight y para aco_h
 
 -- 
 
-function initialHeuristic(jobList)
+function initializeHeuristic(jobList)
     size = jobList.size
     heuristicMatrix = empty list 
     for i=0 to size
@@ -16,4 +16,11 @@ function initialHeuristic(jobList)
     return heuristicMatrix
 
 function mddOperation(processedTime,job)
-    return max(processedTime+processingTime from job,dueDate from job)
+    if the problem is weighted:
+        max(processedTime+processingTime from job,dueDate from job)*weight from job
+    else:
+        max(processedTime+processingTime from job,dueDate from job)
+
+
+-----------------------------------
+
