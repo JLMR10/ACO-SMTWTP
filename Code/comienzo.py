@@ -19,10 +19,14 @@ class Ant(object):
         while len(self.solution)!=len(self.probabilityMatrix[0]):
             if aco_d:
                 processed = sum(jobList[i].processingTime for i in self.solution)
+                is_aco_d = False
                 for i,job in enumerate(sortedJobListNoSolution):
                     if i+1 != len(sortedJobListNoSolution):
                         if processed > job.dueDate and processed < sortedJobListNoSolution[i+1].dueDate:
-                            break #codition for determinist aco
+                            is_aco_d = True
+                            break
+                if is_aco_d:
+                    break #go to determinist decisions in line 36
             self.actualNode = self.nextStep(q0,jobList,pheromonesMatrix,heuristicList,alpha,beta,aco_s)
             self.solution.append(self.actualNode)
             heuristicList = self.updateHeuristic(jobList,self.solution,activatedWeight,aco_h)
